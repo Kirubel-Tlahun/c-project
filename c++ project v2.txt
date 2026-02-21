@@ -1,0 +1,279 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+using namespace std;
+
+// Define a structure to hold student information
+struct Student {
+    string serial_no;
+    string id_no;
+    string first_name;
+    string last_name;
+    string gender;
+    int age;
+    string dorm_no;
+    string bed_no;
+    string department;  // Added department
+    string batch;      // Added batch
+};
+
+// Function to display a formatted header
+void displayHeader() {
+    cout << left << setw(15) << "Serial" << setw(15) << "ID No" << setw(15) << "First Name"
+         << setw(15) << "Last Name" << setw(10) << "Gender" << setw(5) << "Age"
+         << setw(10) << "Dorm" << setw(10) << "Bed" << setw(20) << "Department" << setw(15) << "Batch" << endl;
+    cout << string(120, '-') << endl;
+}
+
+// Function to check if a serial number exists
+bool serialExists(string serial_no) {
+    ifstream fin("student.txt");
+    Student student;
+
+    while (fin >> student.serial_no) {
+        fin >> student.id_no >> student.first_name >> student.last_name
+            >> student.gender >> student.age >> student.dorm_no >> student.bed_no
+            >> student.department >> student.batch;
+
+        if (student.serial_no == serial_no) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Function to register a new student
+void registerStudent() {
+    ofstream fout("student.txt", ios::app);
+    Student student;
+
+    cout << "Enter serial number: ";
+    cin >> student.serial_no;
+
+    if (serialExists(student.serial_no)) {
+        cout << "This serial number already exists. Please try again.\n";
+        return;
+    }
+
+    cout << "Enter ID number: ";
+    cin >> student.id_no;
+    cout << "Enter first name: ";
+    cin >> student.first_name;
+    cout << "Enter last name: ";
+    cin >> student.last_name;
+    cout << "Enter gender: ";
+    cin >> student.gender;
+    cout << "Enter age: ";
+    cin >> student.age;
+    cout << "Enter dorm number: ";
+    cin >> student.dorm_no;
+    cout << "Enter bed number: ";
+    cin >> student.bed_no;
+    cout << "Enter department: ";
+    cin >> student.department;  // Added department input
+    cout << "Enter batch: ";
+    cin >> student.batch;  // Added batch input
+
+    fout << student.serial_no << " " << student.id_no << " " << student.first_name << " "
+         << student.last_name << " " << student.gender << " " << student.age << " "
+         << student.dorm_no << " " << student.bed_no << " " << student.department << " " << student.batch << endl;
+
+    fout.close();
+    cout << "Student registered successfully.\n\n";  // Success message on new line
+}
+
+// Function to display all students
+void displayStudents() {
+    ifstream fin("student.txt");
+    Student student;
+
+    displayHeader();
+
+    while (fin >> student.serial_no) {
+        fin >> student.id_no >> student.first_name >> student.last_name
+            >> student.gender >> student.age >> student.dorm_no >> student.bed_no
+            >> student.department >> student.batch;
+
+        cout << left << setw(15) << student.serial_no << setw(15) << student.id_no
+             << setw(15) << student.first_name << setw(15) << student.last_name
+             << setw(10) << student.gender << setw(5) << student.age
+             << setw(10) << student.dorm_no << setw(10) << student.bed_no
+             << setw(20) << student.department << setw(15) << student.batch << endl;
+    }
+
+    fin.close();
+}
+
+// Function to search for a student by serial number
+void searchStudent() {
+    ifstream fin("student.txt");
+    Student student;
+    string search_serial;
+
+    cout << "Enter serial number to search: ";
+    cin >> search_serial;
+
+    bool found = false;
+    displayHeader();
+
+    while (fin >> student.serial_no) {
+        fin >> student.id_no >> student.first_name >> student.last_name
+            >> student.gender >> student.age >> student.dorm_no >> student.bed_no
+            >> student.department >> student.batch;
+
+        if (student.serial_no == search_serial) {
+            cout << left << setw(15) << student.serial_no << setw(15) << student.id_no
+                 << setw(15) << student.first_name << setw(15) << student.last_name
+                 << setw(10) << student.gender << setw(5) << student.age
+                 << setw(10) << student.dorm_no << setw(10) << student.bed_no
+                 << setw(20) << student.department << setw(15) << student.batch << endl;
+            found = true;
+        }
+    }
+
+    if (!found) {
+        cout << "No student found with serial number: " << search_serial << endl;
+    }
+
+    fin.close();
+}
+
+// Function to delete a student by serial number
+void deleteStudent() {
+    ifstream fin("student.txt");
+    ofstream fout("temp.txt");
+    Student student;
+    string delete_serial;
+
+    cout << "Enter serial number to delete: ";
+    cin >> delete_serial;
+
+    bool found = false;
+
+    while (fin >> student.serial_no) {
+        fin >> student.id_no >> student.first_name >> student.last_name
+            >> student.gender >> student.age >> student.dorm_no >> student.bed_no
+            >> student.department >> student.batch;
+
+        if (student.serial_no == delete_serial) {
+            found = true;
+            cout << "Student with serial number " << delete_serial << " deleted successfully.\n\n";  // Success message on new line
+        } else {
+            fout << student.serial_no << " " << student.id_no << " " << student.first_name << " "
+                 << student.last_name << " " << student.gender << " " << student.age << " "
+                 << student.dorm_no << " " << student.bed_no << " " << student.department << " " << student.batch << endl;
+        }
+    }
+
+    fin.close();
+    fout.close();
+
+    if (found) {
+        remove("student.txt");
+        rename("temp.txt", "student.txt");
+    } else {
+        cout << "No student found with serial number: " << delete_serial << endl;
+        remove("temp.txt");
+    }
+}
+
+// Function to update a student's details by serial number
+void updateStudent() {
+    ifstream fin("student.txt");
+    ofstream fout("temp.txt");
+    Student student;
+    string update_serial;
+
+    cout << "Enter serial number to update: ";
+    cin >> update_serial;
+
+    bool found = false;
+
+    while (fin >> student.serial_no) {
+        fin >> student.id_no >> student.first_name >> student.last_name
+            >> student.gender >> student.age >> student.dorm_no >> student.bed_no
+            >> student.department >> student.batch;
+
+        if (student.serial_no == update_serial) {
+            found = true;
+            cout << "Enter new details for student:\n";
+            cout << "Enter ID number: ";
+            cin >> student.id_no;  // Allow duplicate ID numbers
+            cout << "Enter first name: ";
+            cin >> student.first_name;
+            cout << "Enter last name: ";
+            cin >> student.last_name;
+            cout << "Enter gender: ";
+            cin >> student.gender;
+            cout << "Enter age: ";
+            cin >> student.age;
+            cout << "Enter dorm number: ";
+            cin >> student.dorm_no;
+            cout << "Enter bed number: ";
+            cin >> student.bed_no;
+            cout << "Enter department: ";
+            cin >> student.department;  // Added department input
+            cout << "Enter batch: ";
+            cin >> student.batch;  // Added batch input
+            cout << "Student details updated successfully.\n\n";  // Success message on new line
+        }
+
+        fout << student.serial_no << " " << student.id_no << " " << student.first_name << " "
+             << student.last_name << " " << student.gender << " " << student.age << " "
+             << student.dorm_no << " " << student.bed_no << " " << student.department << " " << student.batch << endl;
+    }
+
+    fin.close();
+    fout.close();
+
+    if (found) {
+        remove("student.txt");
+        rename("temp.txt", "student.txt");
+    } else {
+        cout << "No student found with serial number: " << update_serial << endl;
+        remove("temp.txt");
+    }
+}
+
+// Main function
+int main() {
+    int choice;
+
+    do {
+        cout << "\nStudent Management System\n";
+        cout << "1. Register Student\n";
+        cout << "2. Display Students\n";
+        cout << "3. Search Student\n";
+        cout << "4. Update Student\n";  // Update is now above delete
+        cout << "5. Delete Student\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                registerStudent();
+                break;
+            case 2:
+                displayStudents();
+                break;
+            case 3:
+                searchStudent();
+                break;
+            case 4:
+                updateStudent();
+                break;
+            case 5:
+                deleteStudent();
+                break;
+            case 6:
+                cout << "Exiting the program. Goodbye!\n";
+                break;
+            default:
+                cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 6);
+
+    return 0;
+}
